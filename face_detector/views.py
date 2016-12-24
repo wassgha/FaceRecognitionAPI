@@ -60,7 +60,7 @@ images, labels = get_images_and_labels(TRAINED_FACES_PATH)
 recognizer.train(images, np.array(labels))
 
 @csrf_exempt
-def detect(request):
+def recognize(request):
 	# initialize the data dictionary to be returned by the request
 	data = {}
 	# check to see if this is a post request
@@ -119,10 +119,14 @@ def detect(request):
 			   user = ""
 
 			# update the data dictionary with the faces detected
-			data.update({"detected": True, "identity": identity, "user_object": user, "box": rects, "smiling": smiling})
+			data.update({"detected": True, "identity": identity, "user": user, "box": rects, "smiling": smiling})
 
 	# return a JSON response
 	return JsonResponse(data)
+
+@csrf_exempt
+def train(request):
+	return JsonResponse(None)
 
 def _grab_image(path=None, base64_string=None, url=None):
 	# if the path is not None, then load the image from disk
