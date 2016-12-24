@@ -11,6 +11,7 @@ import json
 import cv2
 import os
 import random
+import uuid
 
 
 # define the path to the face detector
@@ -41,15 +42,12 @@ def get_images_and_labels(path):
 	        image_pil = Image.open(image_path).convert('L')
 	        # Convert the image format into numpy array
 	        image = np.array(image_pil, 'uint8')
-	        # Get the label of the image
-	        nbr = int(os.path.split(image_path)[1].split(".")[0].replace("subject", ""))
 	        # Detect the face in the image
 	        faces = detector.detectMultiScale(image)
 	        # If face is detected, append the face to images and the label to labels
 	        for (x, y, w, h) in faces:
 	            images.append(image[y: y + h, x: x + w])
 	            labels.append(int(user_path))
-	            #print("Training on face " + str(nbr) + "...")
 	            #cv2.imshow("Adding faces to traning set...", image[y: y + h, x: x + w])
 	            #cv2.waitKey(50)
 	    # return the images list and labels list
@@ -114,6 +112,7 @@ def recognize(request):
 			   	"last_name" : user.last_name,
 			   	"username" : user.username,
 			   	"email" : user.email,
+			   	"id" : user.pk,
 			   }
 			except  User.DoesNotExist:
 			   user = ""
@@ -126,7 +125,44 @@ def recognize(request):
 
 @csrf_exempt
 def train(request):
-	return JsonResponse(None)
+	# check to see if this is a post request
+	if request.method == "POST":
+		# check to see if an image was uploaded
+		if request.POST.get("imageBase64", None) is not None and request.POST.get("user", None) is not None :
+			# grab the uploaded image
+			image = _grab_image(base64_string=request.POST.get("imageBase64", None))
+			image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+			rects = detector.detectMultiScale(image, scaleFactor=1.1, minNeighbors=5,
+				minSize=(30, 30), flags=0)
+
+			# construct a list of bounding boxes from the detection
+			rects = [(int(x), int(y), int(x + w), int(y + h)) for (x, y, w, h) in rects]
+			if len(rects) == 0:
+				return JsonResponse({"error" : "No faces detected"})
+			else :
+				x, y, w, h = rects[0]
+				cv2.imwrite( TRAINED_FACES_PATH + "/" +  str(request.POST.get("user", None)) + "/" + str(uuid.uuid4()) + ".jpg", image[y:h, x:w] );
+	return JsonResponse({"success" : True})
+
+@csrf_exempt
+def new(request):
+	if request.method == "POST":
+		if request.POST.get("username", None) is not None and request.POST.get("email", None) is not None:
+			user = User.objects.create_user(request.POST.get("username", None), request.POST.get("email", None), '')
+			user.first_name = request.POST.get("first_name", None) 
+			user.last_name = request.POST.get("last_name", None) 
+			user.save()
+			training_folder = os.path.join(TRAINED_FACES_PATH, str(user.pk))
+			if not os.path.exists(training_folder):
+				os.makedirs(training_folder)
+	return JsonResponse({"sucess": True})
+
+
+@csrf_exempt
+def users(request):
+	users = [{"first_name" : user.first_name, "last_name": user.last_name, "id" : user.pk} for user in User.objects.all()]
+
+	return JsonResponse({"users" : users})
 
 def _grab_image(path=None, base64_string=None, url=None):
 	# if the path is not None, then load the image from disk
