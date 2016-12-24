@@ -93,6 +93,7 @@ def detect(request):
 			data.update({"detected": False})
 		else :
 			x, y, w, h = rects[0]
+			recognizer.setThreshold(40.0)
 			identity = recognizer.predict(
 				image[y:h, x:w]
 				)
