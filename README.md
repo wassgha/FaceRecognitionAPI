@@ -2,7 +2,7 @@
 **A simple Django software that wraps OpenCV features as a RESTful API (features include face recognition, face detection and smile detection**
 
 #Installation
-Make sure you have OpenCV3 and Django installed. Download/Clone the project and execute  
+Make sure OpenCV3 (`conda install -c menpo opencv3=3.1.0`), Django (`conda install django`) and PIL (`conda install PIL`) are installed. Download or clone the project and execute  
 `python manage.py migrate`  
 Once migrations finish executing, run the project using  
 `python manage.py runserver`  
