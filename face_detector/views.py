@@ -14,15 +14,19 @@ import random
 import uuid
 
 
-# define the path to the face detector
+# define the path to the face detector and smile detector
 FACE_DETECTOR_PATH = "{base_path}/cascades/haarcascade_frontalface_default.xml".format(
 	base_path=os.path.abspath(os.path.dirname(__file__)))
 
 SMILE_DETECTOR_PATH = "{base_path}/cascades/haarcascade_smile.xml".format(
 	base_path=os.path.abspath(os.path.dirname(__file__)))
 
+# path to trained faces and labels
 TRAINED_FACES_PATH = "{base_path}/faces".format(
 	base_path=os.path.abspath(os.path.dirname(__file__)))
+
+# maximum distance between face and match
+THRESHOLD = 75
 
 # create the cascade classifiers
 detector = cv2.CascadeClassifier(FACE_DETECTOR_PATH)
@@ -93,7 +97,7 @@ def recognize(request):
 			data.update({"detected": False})
 		else :
 			x, y, w, h = rects[0]
-			recognizer.setThreshold(40.0)
+			recognizer.setThreshold(THRESHOLD)
 			identity = recognizer.predict(
 				image[y:h, x:w]
 				)
