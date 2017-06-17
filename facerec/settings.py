@@ -65,15 +65,9 @@ TEMPLATES = [
     },
 ]
 
-<<<<<<< HEAD
 ROOT_URLCONF = 'facerec.urls'
 
 WSGI_APPLICATION = 'facerec.wsgi.application'
-=======
-ROOT_URLCONF = 'cv_api.urls'
-
-WSGI_APPLICATION = 'cv_api.wsgi.application'
->>>>>>> 4211d8756cae2ef760968e10e68647156299b65c
 
 
 # Database
