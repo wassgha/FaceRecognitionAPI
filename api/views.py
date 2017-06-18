@@ -4,9 +4,9 @@ from django.http import JsonResponse
 from django.contrib.auth.models import User
 import base64
 from PIL import Image
-from StringIO import StringIO
+from io import StringIO
 import numpy as np
-import urllib
+import urllib.request
 import json
 import cv2
 import os
@@ -65,17 +65,17 @@ recognizer.train(images, np.array(labels))
 def recognize(request):
 	# initialize the data dictionary to be returned by the request
 	data = {}
-	# check to see if this is a post request
-	if request.method == "POST":
+	# check to see if this is a get request
+	if request.method == "GET":
 		# check to see if an image was uploaded
-		if request.POST.get("imageBase64", None) is not None:
+		if request.GET.get("imageBase64", None) is not None:
 			# grab the uploaded image
-			image = _grab_image(base64_string=request.POST.get("imageBase64", None))
+			image = _grab_image(base64_string=request.GET.get("imageBase64", None))
 
 		# otherwise, assume that a URL was passed in
 		else:
 			# grab the URL from the request
-			url = request.POST.get("url", None)
+			url = request.GET.get("url", None)
 
 			# if the URL is None, then return an error
 			if url is None:
@@ -98,15 +98,14 @@ def recognize(request):
 		else :
 			x, y, w, h = rects[0]
 			recognizer.setThreshold(THRESHOLD)
-			identity = recognizer.predict(
+			identity, confidence = recognizer.predict(
 				image[y:h, x:w]
 				)
-			#cv2.imwrite( TRAINED_FACES_PATH + "/" +  str(random.randint(1, 10)) + ".jpg", image[y:h, x:w] );
 			smile = smiledetector.detectMultiScale(
 			image[y:h, x:w],
 			scaleFactor= 1.7,
 			minNeighbors=22,
-			minSize=(25, 25), 
+			minSize=(25, 25),
 			flags=0)
 			smiling = False if len(smile) == 0 else True
 			try:
@@ -129,12 +128,12 @@ def recognize(request):
 
 @csrf_exempt
 def train(request):
-	# check to see if this is a post request
-	if request.method == "POST":
+	# check to see if this is a GET request
+	if request.method == "GET":
 		# check to see if an image was uploaded
-		if request.POST.get("imageBase64", None) is not None and request.POST.get("user", None) is not None :
+		if request.GET.get("imageBase64", None) is not None and request.GET.get("user", None) is not None :
 			# grab the uploaded image
-			image = _grab_image(base64_string=request.POST.get("imageBase64", None))
+			image = _grab_image(base64_string=request.GET.get("imageBase64", None))
 			image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 			rects = detector.detectMultiScale(image, scaleFactor=1.1, minNeighbors=5,
 				minSize=(30, 30), flags=0)
@@ -145,16 +144,16 @@ def train(request):
 				return JsonResponse({"error" : "No faces detected"})
 			else :
 				x, y, w, h = rects[0]
-				cv2.imwrite( TRAINED_FACES_PATH + "/" +  str(request.POST.get("user", None)) + "/" + str(uuid.uuid4()) + ".jpg", image[y:h, x:w] );
+				cv2.imwrite( TRAINED_FACES_PATH + "/" +  str(request.GET.get("user", None)) + "/" + str(uuid.uuid4()) + ".jpg", image[y:h, x:w] );
 	return JsonResponse({"success" : True})
 
 @csrf_exempt
 def new(request):
-	if request.method == "POST":
-		if request.POST.get("username", None) is not None and request.POST.get("email", None) is not None:
-			user = User.objects.create_user(request.POST.get("username", None), request.POST.get("email", None), '')
-			user.first_name = request.POST.get("first_name", None) 
-			user.last_name = request.POST.get("last_name", None) 
+	if request.method == "GET":
+		if request.GET.get("username", None) is not None and request.GET.get("email", None) is not None:
+			user = User.objects.create_user(request.GET.get("username", None), request.GET.get("email", None), '')
+			user.first_name = request.GET.get("first_name", None)
+			user.last_name = request.GET.get("last_name", None)
 			user.save()
 			training_folder = os.path.join(TRAINED_FACES_PATH, str(user.pk))
 			if not os.path.exists(training_folder):
@@ -174,13 +173,13 @@ def _grab_image(path=None, base64_string=None, url=None):
 		image = cv2.imread(path)
 
 	# otherwise, the image does not reside on disk
-	else:	
+	else:
 		# if the URL is not None, then download the image
 		if url is not None:
-			resp = urllib.urlopen(url)
-			data = resp.read()
-			image = np.asarray(bytearray(data), dtype="uint8")
-			image = cv2.imdecode(image, cv2.IMREAD_COLOR)
+			with urllib.request.urlopen(url) as resp:
+				data = resp.read()
+				image = np.asarray(bytearray(data), dtype="uint8")
+				image = cv2.imdecode(image, cv2.IMREAD_COLOR)
 
 		# if the stream is not None, then the image has been uploaded
 		elif base64_string is not None:
@@ -197,6 +196,6 @@ def _grab_image(path=None, base64_string=None, url=None):
 
 		# convert the image to a NumPy array and then read it into
 		# OpenCV format
- 
+
 	# return the image
 	return image
