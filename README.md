@@ -21,11 +21,19 @@ Once migrations finish executing, run the project using
 #### Requests
 You can use the API by making a `GET` request to the following endpoints:
 
+<<<<<<< HEAD
 `/new`
 
 Creates a new user profile and prepares an internal folder to host all photos of this user's face.
 
 `/recognize`
+=======
+##### /new
+
+Creates a new user profile and prepares an internal folder to host all photos of this user's face.
+
+##### /recognize
+>>>>>>> 943ff6e67094002c6d2a1dda594c3c8684292fdd
 
 Recognizes a user based on a provided photo. Call should provide exactly one of the following parameters.
 
@@ -62,11 +70,19 @@ Example Response:
 }
 ```
 
+<<<<<<< HEAD
 `/train`
 
 Trains a registered user's model using a given photo of the user. The image is cropped, saved and used in the model on the next restart of the API server.
 
 `/users`
+=======
+##### /train
+
+Trains a registered user's model using a given photo of the user. The image is cropped, saved and used in the model on the next restart of the API server.
+
+##### /users
+>>>>>>> 943ff6e67094002c6d2a1dda594c3c8684292fdd
 
 Lists all users currently registered.
 
