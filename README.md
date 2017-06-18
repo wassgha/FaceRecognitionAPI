@@ -1,6 +1,6 @@
 # FaceRecognitionAPI
 **A Django OpenCV wrapper that acts as a RESTful API for face recognition**
-### Dependencies
+## Dependencies
 
 Make sure you have all the dependencies installed before running the API server. This project is dependent on:
 - Python3 (`brew install python3`)
@@ -10,30 +10,31 @@ Make sure you have all the dependencies installed before running the API server.
 
 If you encounter any problems installing OpenCV3 with Python3, consult [this StackOverflow answer](https://stackoverflow.com/questions/32420853/homebrew-installation-of-opencv-3-0-not-linking-to-python).
 
-### Installation
+## Installation
 Download or clone the project and execute  
 `python manage.py migrate`  
 Once migrations finish executing, run the project using  
 `python manage.py runserver`  
 
-### Usage
+## Usage
 
-#### Requests
+### Requests
 You can use the API by making a `GET` request to the following endpoints:
 
-<<<<<<< HEAD
-`/new`
+| Endpoint     | Description    |
+| ------------- |:-------------:|
+| `/new`   | Used to add a user profile before training |
+| `/train`   | Used to add a known photo to a user profile and use it to identify the user later |
+| `/recognize`   | Given a photo, recognize the user in the photo |
+| `/users`   | Lists all registered users |
+
+
+
+#### `/new`
 
 Creates a new user profile and prepares an internal folder to host all photos of this user's face.
 
-`/recognize`
-=======
-##### /new
-
-Creates a new user profile and prepares an internal folder to host all photos of this user's face.
-
-##### /recognize
->>>>>>> 943ff6e67094002c6d2a1dda594c3c8684292fdd
+#### `/recognize`
 
 Recognizes a user based on a provided photo. Call should provide exactly one of the following parameters.
 
@@ -70,19 +71,11 @@ Example Response:
 }
 ```
 
-<<<<<<< HEAD
-`/train`
+#### `/train`
 
 Trains a registered user's model using a given photo of the user. The image is cropped, saved and used in the model on the next restart of the API server.
 
-`/users`
-=======
-##### /train
-
-Trains a registered user's model using a given photo of the user. The image is cropped, saved and used in the model on the next restart of the API server.
-
-##### /users
->>>>>>> 943ff6e67094002c6d2a1dda594c3c8684292fdd
+#### `/users`
 
 Lists all users currently registered.
 
